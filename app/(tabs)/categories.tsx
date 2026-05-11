@@ -2,9 +2,7 @@ import {
   useFocusEffect,
 } from "@react-navigation/native"
 
-import {
-  router,
-} from "expo-router"
+import { router } from "expo-router"
 
 import {
   useCallback,
@@ -24,23 +22,15 @@ import {
 } from "react-native-safe-area-context"
 
 import {
-  useTransactions,
-} from "../../hooks/useTransactions"
-
-import {
   useCategories,
 } from "../../hooks/useCategories"
 
-export default function TransactionsScreen() {
+export default function CategoriesScreen() {
   const {
-    transactions,
+    categories,
     loading,
     error,
     recargar,
-  } = useTransactions()
-
-  const {
-    categories,
   } = useCategories()
 
   useFocusEffect(
@@ -49,30 +39,11 @@ export default function TransactionsScreen() {
     }, [recargar])
   )
 
-  const getCategoryName = (
-    categoryId: string
-  ) => {
-    const category =
-      categories.find(
-        (c) =>
-          c.id === categoryId
-      )
-
-    return (
-      category?.name ??
-      "Sin categoría"
-    )
-  }
-
   if (loading) {
     return (
-      <SafeAreaView
-        style={styles.screen}
-      >
+      <SafeAreaView style={styles.screen}>
         <View style={styles.centered}>
-          <ActivityIndicator
-            size="large"
-          />
+          <ActivityIndicator size="large" />
         </View>
       </SafeAreaView>
     )
@@ -80,29 +51,27 @@ export default function TransactionsScreen() {
 
   if (error) {
     return (
-      <SafeAreaView
-        style={styles.screen}
-      >
+      <SafeAreaView style={styles.screen}>
         <View style={styles.centered}>
-          <Text>{error}</Text>
+          <Text style={styles.error}>
+            {error}
+          </Text>
         </View>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView
-      style={styles.screen}
-    >
+    <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.title}>
-          Transacciones
+          Categorías
         </Text>
 
         <TouchableOpacity
           onPress={() =>
             router.push(
-              "/(tabs)/transactions/create"
+              "/(tabs)/categories/create"
             )
           }
         >
@@ -113,64 +82,30 @@ export default function TransactionsScreen() {
       </View>
 
       <FlatList
-        data={transactions}
-
-        keyExtractor={(item) =>
-          item.id
-        }
-
+        data={categories}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
             onPress={() =>
               router.push({
                 pathname:
-                  "/(tabs)/transactions/[id]",
-
+                  "/(tabs)/categories/[id]",
                 params: {
                   id: item.id,
                 },
               })
             }
           >
-            <View>
-              <Text
-                style={
-                  styles.description
-                }
-              >
-                {item.description}
-              </Text>
-
-              <Text
-                style={styles.category}
-              >
-                {getCategoryName(
-                  item.categoryId
-                )}
-              </Text>
-            </View>
-
-            <Text
-              style={[
-                styles.amount,
-
-                item.type ===
-                "income"
-                  ? styles.income
-                  : styles.expense,
-              ]}
-            >
-              $
-              {item.amount}
+            <Text style={styles.cardText}>
+              {item.name}
             </Text>
           </TouchableOpacity>
         )}
-
         ListEmptyComponent={
           <View style={styles.centered}>
             <Text>
-              No hay transacciones
+              No hay categorías
             </Text>
           </View>
         }
@@ -193,10 +128,7 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-
-    justifyContent:
-      "space-between",
-
+    justifyContent: "space-between",
     alignItems: "center",
 
     padding: 20,
@@ -209,44 +141,26 @@ const styles = StyleSheet.create({
 
   add: {
     fontSize: 32,
+    fontWeight: "bold",
     color: "#2563eb",
   },
 
   card: {
-    flexDirection: "row",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
+    backgroundColor: "#f3f4f6",
 
     padding: 16,
 
-    borderBottomWidth: 1,
+    marginHorizontal: 20,
+    marginBottom: 12,
 
-    borderColor: "#ddd",
+    borderRadius: 10,
   },
 
-  description: {
+  cardText: {
     fontSize: 16,
-    fontWeight: "600",
   },
 
-  category: {
-    color: "#666",
-    marginTop: 4,
-  },
-
-  amount: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
-  income: {
-    color: "green",
-  },
-
-  expense: {
+  error: {
     color: "red",
   },
 })

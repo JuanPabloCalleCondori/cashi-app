@@ -1,35 +1,111 @@
 import { Tabs } from "expo-router";
-import React from "react";
 
-import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colors } from "@/constants/theme";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
-export default function TabLayout() {
+export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}
-    >
+    <Tabs screenOptions={{ headerShown: false }}>
+      {/* PRINCIPALES */}
+
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Transacciones",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <FontAwesome
+              name="list"
+              size={20}
+              color={color}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
-        name="explore"
+        name="balance"
         options={{
-          title: "Explore",
+          title: "Balance",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <FontAwesome
+              name="money"
+              size={20}
+              color={color}
+            />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="categories"
+        options={{
+        href: "/categories",
+        title: "Categorías",
+
+        tabBarIcon: ({ color }) => (
+       <FontAwesome
+          name="tags"
+          size={20}
+          color={color}
+          />
+       ),
+        }}
+      />
+
+      {/* OCULTAS */}
+
+      <Tabs.Screen
+        name="categories/create"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="categories/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="categories/[id]/index"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="categories/[id]/edit"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="transactions/create"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="transactions/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="transactions/[id]/index"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="transactions/[id]/edit"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
