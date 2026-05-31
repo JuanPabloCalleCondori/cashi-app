@@ -11,6 +11,8 @@ import type {
   UpdateCategoryInput,
 } from "../types/category"
 
+import { eventEmitter } from "../utils/eventEmitter"
+
 const STORAGE_KEY = "categories"
 
 export const useCategories = () => {
@@ -49,6 +51,15 @@ export const useCategories = () => {
 
   useEffect(() => {
     cargarCategorias()
+    
+    // Suscribirse a cambios de categorías desde otros componentes
+    const unsubscribe =
+      eventEmitter.on(
+        "categories-changed",
+        cargarCategorias
+      )
+
+    return unsubscribe
   }, [cargarCategorias])
 
   const persistir = async (
@@ -60,6 +71,9 @@ export const useCategories = () => {
     )
 
     setCategories(nuevasCategorias)
+    
+    // Notificar a todos los componentes que usan useCategories
+    eventEmitter.emit("categories-changed")
   }
 
   const crearCategoria = async (

@@ -6,9 +6,12 @@ import {
 
 import {
   useCallback,
+  useRef,
+  useState,
 } from "react"
 
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -34,6 +37,14 @@ import {
   useCategories,
 } from "../../../hooks/useCategories"
 
+import {
+  useImagePicker,
+} from "../../../hooks/useImagePicker"
+
+import {
+  useLocation,
+} from "../../../hooks/useLocation"
+
 export default function CreateTransactionScreen() {
   const {
     crearTransaccion,
@@ -44,15 +55,30 @@ export default function CreateTransactionScreen() {
     recargar,
   } = useCategories()
 
+  const imagePicker =
+    useImagePicker()
+
+  const locationHook =
+    useLocation()
+
+  const [resetTrigger, setResetTrigger] =
+    useState(0)
+
   useFocusEffect(
     useCallback(() => {
       void recargar()
+      setResetTrigger((prev) => prev + 1)
     }, [recargar])
   )
+
+  const formResetRef = useRef<
+    (() => void) | null
+  >(null)
 
   const form =
     useTransactionForm({
       mode: "create",
+      resetTrigger,
 
       onSubmit: async (data) => {
         await crearTransaccion({
@@ -62,11 +88,29 @@ export default function CreateTransactionScreen() {
             data.description!,
           categoryId:
             data.categoryId!,
+
+          photoUri:
+            imagePicker.imageUri,
+
+          location:
+            locationHook.location
+              ? {
+                  latitude:
+                    locationHook.location.latitude,
+
+                  longitude:
+                    locationHook.location.longitude,
+                }
+              : undefined,
         })
 
+        formResetRef.current?.()
+        
         router.back()
       },
     })
+
+  formResetRef.current = form.reset
 
   return (
     <View style={styles.screen}>
@@ -86,7 +130,6 @@ export default function CreateTransactionScreen() {
           <TextInput
             style={[
               styles.input,
-
               form.errores.amount
                 ? styles.inputError
                 : null,
@@ -108,7 +151,6 @@ export default function CreateTransactionScreen() {
           <TextInput
             style={[
               styles.input,
-
               form.errores
                 .description
                 ? styles.inputError
@@ -135,7 +177,6 @@ export default function CreateTransactionScreen() {
             <TouchableOpacity
               style={[
                 styles.typeButton,
-
                 form.type ===
                 "income"
                   ? styles.activeType
@@ -155,7 +196,6 @@ export default function CreateTransactionScreen() {
             <TouchableOpacity
               style={[
                 styles.typeButton,
-
                 form.type ===
                 "expense"
                   ? styles.activeType
@@ -215,6 +255,97 @@ export default function CreateTransactionScreen() {
                   .categoryId
               }
             </Text>
+          ) : null}
+
+          <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              imagePicker.takePhoto
+            }
+          >
+            <Text>
+              Tomar foto
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              imagePicker.pickImage
+            }
+          >
+            <Text>
+              Seleccionar desde galería
+            </Text>
+          </TouchableOpacity>
+
+          {imagePicker.error ? (
+            <Text style={styles.error}>
+              {imagePicker.error}
+            </Text>
+          ) : null}
+
+          {imagePicker.imageUri ? (
+            <Image
+              source={{
+                uri:
+                  imagePicker.imageUri,
+              }}
+              style={
+                styles.preview
+              }
+            />
+          ) : null}
+
+          <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              locationHook.getCurrentLocation
+            }
+          >
+            <Text>
+              Obtener ubicación
+            </Text>
+          </TouchableOpacity>
+
+          {locationHook.loading ? (
+            <Text>
+              Obteniendo ubicación...
+            </Text>
+          ) : null}
+
+          {locationHook.error ? (
+            <Text style={styles.error}>
+              {locationHook.error}
+            </Text>
+          ) : null}
+
+          {locationHook.location ? (
+            <View>
+              <Text>
+                Latitud:{" "}
+                {
+                  locationHook
+                    .location
+                    .latitude
+                }
+              </Text>
+
+              <Text>
+                Longitud:{" "}
+                {
+                  locationHook
+                    .location
+                    .longitude
+                }
+              </Text>
+            </View>
           ) : null}
 
           <TouchableOpacity
@@ -289,6 +420,21 @@ const styles = StyleSheet.create({
 
   picker: {
     borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+
+  secondaryButton: {
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+
+  preview: {
+    width: "100%",
+    height: 200,
     borderRadius: 8,
     marginBottom: 16,
   },

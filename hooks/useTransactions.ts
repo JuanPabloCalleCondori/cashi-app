@@ -1,17 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
 import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react"
 
 import type {
-    CreateTransactionInput,
-    Transaction,
-    UpdateTransactionInput,
+  CreateTransactionInput,
+  Transaction,
+  UpdateTransactionInput,
 } from "../types/transaction"
+
+import { eventEmitter } from "../utils/eventEmitter"
 
 const STORAGE_KEY =
   "transactions"
@@ -56,6 +58,15 @@ export const useTransactions =
 
     useEffect(() => {
       cargarTransacciones()
+      
+      // Suscribirse a cambios de transacciones desde otros componentes
+      const unsubscribe =
+        eventEmitter.on(
+          "transactions-changed",
+          cargarTransacciones
+        )
+
+      return unsubscribe
     }, [cargarTransacciones])
 
     const persistir = async (
@@ -67,6 +78,9 @@ export const useTransactions =
       )
 
       setTransactions(nuevas)
+      
+      // Notificar a todos los componentes que usan useTransactions
+      eventEmitter.emit("transactions-changed")
     }
 
     const crearTransaccion =

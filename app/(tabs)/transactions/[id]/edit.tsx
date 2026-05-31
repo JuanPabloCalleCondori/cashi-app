@@ -1,37 +1,52 @@
 import {
-    router,
-    useLocalSearchParams,
+  router,
+  useLocalSearchParams,
 } from "expo-router"
 
 import {
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native"
 
 import {
-    Picker,
+  Picker,
 } from "@react-native-picker/picker"
 
 import {
-    useMemo,
+  useCallback,
+  useMemo
 } from "react"
 
 import {
-    useTransactions,
+  useTransactions,
 } from "../../../../hooks/useTransactions"
 
 import {
-    useCategories,
+  useCategories,
 } from "../../../../hooks/useCategories"
 
 import {
-    useTransactionForm,
+  useTransactionForm,
 } from "../../../../hooks/useTransactionForm"
+
+import {
+  useImagePicker,
+} from "../../../../hooks/useImagePicker"
+
+import {
+  useLocation,
+} from "../../../../hooks/useLocation"
+
+import {
+  useFocusEffect,
+} from "@react-navigation/native"
+
 
 export default function EditTransactionScreen() {
   const { id } =
@@ -39,19 +54,52 @@ export default function EditTransactionScreen() {
       id: string
     }>()
 
+    console.log(
+  "ID recibido:",
+  id
+)
+
+
   const {
     transactions,
     editarTransaccion,
+    loading,
+    recargar,
   } = useTransactions()
 
   const {
     categories,
+    recargar: recargarCategorias,
   } = useCategories()
+
+  useFocusEffect(
+    useCallback(() => {
+      void recargar()
+      void recargarCategorias()
+    }, [recargar, recargarCategorias])
+  )
+
+  const imagePicker =
+    useImagePicker()
+
+  const locationHook =
+    useLocation()
 
   const transaction =
     transactions.find(
       (t) => t.id === id
     )
+
+    console.log(
+  "Transacciones:",
+  transactions
+)
+
+console.log(
+  "Transacción encontrada en edit:",
+  transaction?.id
+)
+
 
   const defaultValues =
     useMemo(() => {
@@ -87,13 +135,33 @@ export default function EditTransactionScreen() {
             amount:
               data.amount,
 
-            type: data.type,
+            type:
+              data.type,
 
             description:
               data.description,
 
             categoryId:
               data.categoryId,
+
+            photoUri:
+              imagePicker.imageUri ||
+              transaction?.photoUri,
+
+            location:
+              locationHook.location
+                ? {
+                    latitude:
+                      locationHook
+                        .location
+                        .latitude,
+
+                    longitude:
+                      locationHook
+                        .location
+                        .longitude,
+                  }
+                : transaction?.location,
           }
         )
 
@@ -101,7 +169,20 @@ export default function EditTransactionScreen() {
       },
     })
 
-  if (!transaction) {
+  if (loading) {
+  return (
+    <View style={styles.screen}>
+      <View style={styles.centered}>
+        <Text>
+          Cargando...
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+
+/*if (!transaction) {
     return (
       <View style={styles.screen}>
         <View style={styles.centered}>
@@ -112,6 +193,23 @@ export default function EditTransactionScreen() {
       </View>
     )
   }
+*/
+
+if (!transaction) {
+  console.log("ID recibido:", id)
+  console.log("Transacciones:", transactions)
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.centered}>
+        <Text style={styles.error}>
+          Transacción no encontrada
+        </Text>
+      </View>
+    </View>
+  )
+}
+
 
   return (
     <View style={styles.screen}>
@@ -248,6 +346,127 @@ export default function EditTransactionScreen() {
           </View>
 
           <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              imagePicker.takePhoto
+            }
+          >
+            <Text>
+              Tomar foto
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              imagePicker.pickImage
+            }
+          >
+            <Text>
+              Seleccionar desde galería
+            </Text>
+          </TouchableOpacity>
+
+          {imagePicker.error ? (
+            <Text style={styles.error}>
+              {imagePicker.error}
+            </Text>
+          ) : null}
+
+          {imagePicker.imageUri ? (
+            <Image
+              source={{
+                uri:
+                  imagePicker.imageUri,
+              }}
+              style={
+                styles.preview
+              }
+            />
+          ) : transaction.photoUri ? (
+            <Image
+              source={{
+                uri:
+                  transaction.photoUri,
+              }}
+              style={
+                styles.preview
+              }
+            />
+          ) : null}
+
+          <TouchableOpacity
+            style={
+              styles.secondaryButton
+            }
+            onPress={
+              locationHook.getCurrentLocation
+            }
+          >
+            <Text>
+              Actualizar ubicación
+            </Text>
+          </TouchableOpacity>
+
+          {locationHook.loading ? (
+            <Text>
+              Obteniendo ubicación...
+            </Text>
+          ) : null}
+
+          {locationHook.error ? (
+            <Text style={styles.error}>
+              {locationHook.error}
+            </Text>
+          ) : null}
+
+          {locationHook.location ? (
+            <View>
+              <Text>
+                Latitud:{" "}
+                {
+                  locationHook
+                    .location
+                    .latitude
+                }
+              </Text>
+
+              <Text>
+                Longitud:{" "}
+                {
+                  locationHook
+                    .location
+                    .longitude
+                }
+              </Text>
+            </View>
+          ) : transaction.location ? (
+            <View>
+              <Text>
+                Latitud:{" "}
+                {
+                  transaction
+                    .location
+                    .latitude
+                }
+              </Text>
+
+              <Text>
+                Longitud:{" "}
+                {
+                  transaction
+                    .location
+                    .longitude
+                }
+              </Text>
+            </View>
+          ) : null}
+
+          <TouchableOpacity
             style={styles.button}
             onPress={
               form.handleSubmit
@@ -329,6 +548,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
+  secondaryButton: {
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+
+  preview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+
   button: {
     backgroundColor: "#2563eb",
     padding: 14,
@@ -341,3 +575,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 })
+

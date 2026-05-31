@@ -10,6 +10,15 @@ export interface Transaction {
   date: string
 
   categoryId: string
+
+  // NUEVO EVALUACIÓN 3
+
+  photoUri?: string
+
+  location?: {
+    latitude: number
+    longitude: number
+  }
 }
 
 export interface CreateTransactionInput {
@@ -20,6 +29,15 @@ export interface CreateTransactionInput {
   description: string
 
   categoryId: string
+
+  // NUEVO EVALUACIÓN 3
+
+  photoUri?: string
+
+  location?: {
+    latitude: number
+    longitude: number
+  }
 }
 
 export interface UpdateTransactionInput {
@@ -30,4 +48,13 @@ export interface UpdateTransactionInput {
   description?: string
 
   categoryId?: string
+
+  // NUEVO EVALUACIÓN 3
+
+  photoUri?: string
+
+  location?: {
+    latitude: number
+    longitude: number
+  }
 }

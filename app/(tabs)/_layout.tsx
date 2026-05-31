@@ -60,12 +60,6 @@ export default function TabsLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="categories/[id]"
-        options={{
-          href: null,
-        }}
-      />
 
       <Tabs.Screen
         name="categories/[id]/index"
@@ -88,12 +82,6 @@ export default function TabsLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="transactions/[id]"
-        options={{
-          href: null,
-        }}
-      />
 
       <Tabs.Screen
         name="transactions/[id]/index"

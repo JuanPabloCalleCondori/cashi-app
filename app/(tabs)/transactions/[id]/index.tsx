@@ -1,27 +1,28 @@
 import {
-    router,
-    useFocusEffect,
-    useLocalSearchParams,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
 } from "expo-router"
 
 import {
-    Alert,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native"
 
 import { useCallback } from "react"
 
 import {
-    useTransactions,
+  useTransactions,
 } from "../../../../hooks/useTransactions"
 
 import {
-    useCategories,
+  useCategories,
 } from "../../../../hooks/useCategories"
 
 export default function TransactionDetailScreen() {
@@ -34,7 +35,9 @@ export default function TransactionDetailScreen() {
     transactions,
     eliminarTransaccion,
     recargar,
+    loading,
   } = useTransactions()
+
 
   const {
     categories,
@@ -46,10 +49,27 @@ export default function TransactionDetailScreen() {
     }, [recargar])
   )
 
+  if (loading) {
+  return (
+    <View style={styles.screen}>
+      <View style={styles.centered}>
+        <Text>
+          Cargando...
+        </Text>
+      </View>
+    </View>
+  )
+}
+
   const transaction =
     transactions.find(
       (t) => t.id === id
     )
+  console.log(
+  "Transaction encontrada:",
+  transaction?.id
+  )
+
 
   if (!transaction) {
     return (
@@ -150,10 +170,69 @@ export default function TransactionDetailScreen() {
           ).toLocaleDateString()}
         </Text>
 
+        {transaction.photoUri ? (
+          <View style={styles.section}>
+            <Text
+              style={
+                styles.sectionTitle
+              }
+            >
+              Comprobante
+            </Text>
+
+            <Image
+              source={{
+                uri:
+                  transaction.photoUri,
+              }}
+              style={styles.photo}
+            />
+          </View>
+        ) : null}
+
+        {transaction.location ? (
+          <View style={styles.section}>
+            <Text
+              style={
+                styles.sectionTitle
+              }
+            >
+              Ubicación
+            </Text>
+
+            <Text>
+              Latitud:{" "}
+              {
+                transaction
+                  .location
+                  .latitude
+              }
+            </Text>
+
+            <Text>
+              Longitud:{" "}
+              {
+                transaction
+                  .location
+                  .longitude
+              }
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() =>
+            onPress={() => {
+               console.log(
+      "ID detalle:",
+      transaction.id
+    )
+
+    console.log(
+      "ID enviado a edit:",
+      id
+    )       
               router.push({
                 pathname:
                   "/(tabs)/transactions/[id]/edit",
@@ -162,7 +241,7 @@ export default function TransactionDetailScreen() {
                   id,
                 },
               })
-            }
+            }}
           >
             <Text
               style={
@@ -237,6 +316,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginBottom: 24,
+  },
+
+  section: {
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+
+  photo: {
+    width: "100%",
+    height: 250,
+    borderRadius: 8,
   },
 
   actions: {

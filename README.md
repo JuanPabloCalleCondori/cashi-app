@@ -40,7 +40,9 @@ Cashi es una solución integral para registrar, categorizar y visualizar tus tra
 ✅ **Autenticación segura** - Sistema de login con validación de credenciales  
 ✅ **Gestión de transacciones** - Crear, editar y eliminar transacciones  
 ✅ **Categorización flexible** - Organizar transacciones por categorías personalizadas  
-✅ **Persistencia local** - Almacenamiento con AsyncStorage  
+✅ **Captura de fotos** - Adjuntar comprobantes desde cámara y galería con preview  
+✅ **Geolocalización** - Capturar coordenadas GPS y visualizar ubicación de transacciones  
+✅ **Persistencia local** - Almacenamiento con AsyncStorage (fotos, ubicación, datos)  
 ✅ **Interfaz responsiva** - Compatible con iOS, Android y Web  
 ✅ **Navegación intuitiva** - Sistema de tabs para acceso rápido a funcionalidades  
 ✅ **TypeScript** - Código completamente tipado para mayor seguridad  

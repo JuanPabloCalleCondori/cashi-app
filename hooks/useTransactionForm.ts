@@ -1,13 +1,13 @@
 import {
-    useEffect,
-    useState,
+  useEffect,
+  useState,
 } from "react"
 
 import {
-    createTransactionSchema,
-    updateTransactionSchema,
-    type CreateTransactionInput,
-    type UpdateTransactionInput,
+  createTransactionSchema,
+  updateTransactionSchema,
+  type CreateTransactionInput,
+  type UpdateTransactionInput,
 } from "../schemas/transaction.schema"
 
 type Mode =
@@ -27,6 +27,13 @@ interface Props {
     description: string
 
     categoryId: string
+
+    photoUri?: string
+
+    location?: {
+      latitude: number
+      longitude: number
+    }
   }
 
   onSubmit: (
@@ -44,8 +51,8 @@ export const useTransactionForm =
   }: Props) => {
     const [amount, setAmount] =
       useState(
-        defaultValues?.amount
-          ?.toString() ?? ""
+        defaultValues?.amount?.toString() ??
+          ""
       )
 
     const [type, setType] =
@@ -72,6 +79,27 @@ export const useTransactionForm =
         ""
     )
 
+    const [
+      photoUri,
+      setPhotoUri,
+    ] = useState(
+      defaultValues?.photoUri ??
+        ""
+    )
+
+    const [
+      location,
+      setLocation,
+    ] = useState<
+      | {
+          latitude: number
+          longitude: number
+        }
+      | undefined
+    >(
+      defaultValues?.location
+    )
+
     const [errores, setErrores] =
       useState<
         Record<string, string>
@@ -82,23 +110,45 @@ export const useTransactionForm =
       setSubmitting,
     ] = useState(false)
 
-    useEffect(() => {
-      if (defaultValues) {
-        setAmount(
-          defaultValues.amount.toString()
-        )
+useEffect(() => {
+  if (defaultValues) {
+    setAmount(
+      defaultValues.amount.toString()
+    )
 
-        setType(defaultValues.type)
+    setType(defaultValues.type)
 
-        setDescription(
-          defaultValues.description
-        )
+    setDescription(
+      defaultValues.description
+    )
 
-        setCategoryId(
-          defaultValues.categoryId
-        )
-      }
-    }, [defaultValues])
+    setCategoryId(
+      defaultValues.categoryId
+    )
+
+    setPhotoUri(
+      defaultValues.photoUri ?? ""
+    )
+
+    setLocation(
+      defaultValues.location
+    )
+  } else if (mode === "create") {
+    setAmount("")
+
+    setType("expense")
+
+    setDescription("")
+
+    setCategoryId("")
+
+    setPhotoUri("")
+
+    setLocation(undefined)
+
+    setErrores({})
+  }
+}, [defaultValues, mode])
 
     const handleSubmit =
       async () => {
@@ -108,13 +158,18 @@ export const useTransactionForm =
             : updateTransactionSchema
 
         const data = {
-          amount: Number(amount),
+          amount:
+            Number(amount),
 
           type,
 
           description,
 
           categoryId,
+
+          photoUri,
+
+          location,
         }
 
         const result =
@@ -156,6 +211,16 @@ export const useTransactionForm =
         }
       }
 
+    const reset = () => {
+      setAmount("")
+      setType("expense")
+      setDescription("")
+      setCategoryId("")
+      setPhotoUri("")
+      setLocation(undefined)
+      setErrores({})
+    }
+
     return {
       amount,
       setAmount,
@@ -169,11 +234,19 @@ export const useTransactionForm =
       categoryId,
       setCategoryId,
 
+      photoUri,
+      setPhotoUri,
+
+      location,
+      setLocation,
+
       errores,
 
       submitting,
 
       handleSubmit,
+      
+      reset,
     }
   }
   
