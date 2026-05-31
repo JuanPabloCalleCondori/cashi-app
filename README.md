@@ -8,6 +8,7 @@
 ![Expo](https://img.shields.io/badge/Expo-54.0-000020?style=flat-square&logo=expo)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js)
 
 </div>
 
@@ -17,17 +18,25 @@
 
 - [Descripción](#-descripción)
 - [Características](#-características)
+- [Demo y Screenshots](#-demo-y-screenshots)
 - [Requisitos](#-requisitos)
 - [Instalación](#-instalación)
 - [Uso](#-uso)
+- [Scripts Disponibles](#-scripts-disponibles)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Arquitectura](#-arquitectura)
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Autenticación](#-autenticación)
 - [Almacenamiento de Datos](#-almacenamiento-de-datos)
-- [Desarrollo](#-desarrollo)
+- [Variables de Entorno](#-variables-de-entorno)
+- [Guía de Desarrollo](#-guía-de-desarrollo)
+- [Testing](#-testing)
+- [Troubleshooting](#-troubleshooting)
+- [Roadmap](#-roadmap)
 - [Contribuir](#-contribuir)
+- [Cambios Recientes](#-cambios-recientes)
 - [Recursos](#-recursos)
+- [Licencia](#-licencia)
 
 ---
 
@@ -126,6 +135,16 @@ cd ..
 
 ---
 
+## 🎯 Demo y Screenshots
+
+| Pantalla de Login | Dashboard | Transacciones | Categorías |
+|------------------|-----------|--------------|-----------|
+| ![Login](./assets/images/login.png) | ![Dashboard](./assets/images/dashboard.png) | ![Transacciones](./assets/images/transactions.png) | ![Categorías](./assets/images/categories.png) |
+
+> 📸 Las imágenes de demostración están disponibles en la carpeta `assets/images/`
+
+---
+
 ## 🚀 Uso
 
 ### Iniciar la aplicación en modo desarrollo
@@ -155,6 +174,9 @@ yarn web
 
 # Ejecutar linter
 yarn lint
+
+# Limpiar cache
+expo cache clear
 ```
 
 ### Credenciales de prueba
@@ -166,51 +188,130 @@ Para acceder a la aplicación durante el desarrollo, usa:
 
 ---
 
+## 📜 Scripts Disponibles
+
+```bash
+# Modo desarrollo
+yarn start           # Inicia el servidor de desarrollo
+
+# Plataformas específicas
+yarn android         # Abre en Android
+yarn ios             # Abre en iOS (macOS)
+yarn web             # Abre en navegador web
+
+# Linting
+yarn lint            # Ejecuta ESLint
+yarn lint --fix      # Ejecuta ESLint con correcciones automáticas
+
+# Instalación
+yarn install         # Instala dependencias
+
+# Gestión de cache
+expo cache clear     # Limpia el cache de Expo
+```
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```
 cashi-app/
-├── app/                          # Pantallas y navegación (Expo Router)
-│   ├── _layout.tsx              # Layout raíz
-│   ├── index.tsx                # Pantalla de login
-│   └── (tabs)/                  # Grupo de rutas con navegación por tabs
-│       ├── _layout.tsx          # Configuración de tabs
-│       ├── index.tsx            # Pantalla principal
-│       └── explore.tsx          # Pantalla de exploración
+├── app/                              # Pantallas y navegación (Expo Router)
+│   ├── _layout.tsx                  # Layout raíz con configuración global
+│   ├── index.tsx                    # Pantalla de login (punto de entrada)
+│   ├── +html.tsx                    # Configuración HTML para web
+│   ├── +not-found.tsx               # Página 404
+│   └── (tabs)/                      # Grupo de rutas con navegación por tabs
+│       ├── _layout.tsx              # Configuración de tabs y navegación
+│       ├── index.tsx                # Pantalla principal (Dashboard)
+│       ├── categories.tsx           # Pantalla de gestión de categorías
+│       ├── profile.tsx              # Pantalla de perfil
+│       └── settings.tsx             # Pantalla de configuración
 │
-├── components/                   # Componentes reutilizables
-│   ├── category-item.tsx        # Componente de categoría
-│   ├── transaction-item.tsx     # Componente de transacción
-│   └── ui/                      # Componentes UI base
+├── components/                       # Componentes reutilizables
+│   ├── category-item.tsx            # Componente de visualización de categoría
+│   ├── transaction-item.tsx         # Componente de visualización de transacción
+│   ├── transaction-form.tsx         # Formulario para crear/editar transacción
+│   ├── category-form.tsx            # Formulario para crear/editar categoría
+│   ├── header.tsx                   # Encabezado común
+│   ├── footer.tsx                   # Pie de página
+│   └── ui/                          # Componentes UI base reutilizables
+│       ├── button.tsx               # Botón personalizado
+│       ├── input.tsx                # Campo de entrada
+│       ├── modal.tsx                # Modal
+│       ├── loading.tsx              # Indicador de carga
+│       └── error-boundary.tsx       # Límite de error
 │
-├── hooks/                        # Custom hooks personalizados
-│   ├── useLogin.ts              # Lógica de autenticación
-│   ├── useTransactions.ts       # Gestión de transacciones
-│   ├── useTransactionForm.ts    # Formulario de transacción
-│   ├── useCategories.ts         # Gestión de categorías
-│   └── useCategoryForm.ts       # Formulario de categoría
+├── hooks/                            # Custom hooks personalizados
+│   ├── useLogin.ts                  # Lógica de autenticación y sesión
+│   ├── useTransactions.ts           # Gestión de transacciones (CRUD)
+│   ├── useTransactionForm.ts        # Lógica del formulario de transacción
+│   ├── useCategories.ts             # Gestión de categorías (CRUD)
+│   ├── useCategoryForm.ts           # Lógica del formulario de categoría
+│   ├── useStorage.ts                # Wrapper de AsyncStorage
+│   ├── useLocation.ts               # Gestión de ubicación GPS
+│   └── useCamera.ts                 # Gestión de cámara y galería
 │
-├── constants/                    # Constantes y configuración
-│   └── theme.ts                 # Tema, colores y estilos globales
+├── constants/                        # Constantes y configuración global
+│   ├── theme.ts                     # Tema, colores y estilos globales
+│   ├── colors.ts                    # Paleta de colores
+│   ├── typography.ts                # Definiciones de tipografía
+│   └── endpoints.ts                 # URLs de API (si aplica)
 │
-├── types/                        # Definiciones de tipos TypeScript
-│   ├── transaction.ts           # Tipos de transacción
-│   ├── category.ts              # Tipos de categoría
-│   └── auth.ts                  # Tipos de autenticación
+├── types/                            # Definiciones de tipos TypeScript
+│   ├── transaction.ts               # Tipos e interfaces de transacción
+│   ├── category.ts                  # Tipos e interfaces de categoría
+│   ├── auth.ts                      # Tipos e interfaces de autenticación
+│   ├── user.ts                      # Tipos e interfaces de usuario
+│   ├── api.ts                       # Tipos de respuestas API
+│   └── index.ts                     # Exportaciones centralizadas
 │
-├── schemas/                      # Esquemas de validación (Zod)
-│   └── transaction.ts           # Esquemas de validación
+├── schemas/                          # Esquemas de validación (Zod)
+│   ├── transaction.ts               # Esquemas de validación de transacción
+│   ├── category.ts                  # Esquemas de validación de categoría
+│   ├── auth.ts                      # Esquemas de validación de auth
+│   └── index.ts                     # Exportaciones centralizadas
 │
-├── assets/                       # Imágenes, fuentes y recursos
-│   └── images/                  # Archivos de imagen
+├── utils/                            # Utilidades y funciones auxiliares
+│   ├── storage.ts                   # Funciones de AsyncStorage
+│   ├── validators.ts                # Funciones de validación
+│   ├── formatters.ts                # Formateadores (fechas, moneda, etc)
+│   ├── helpers.ts                   # Funciones auxiliares generales
+│   └── constants.ts                 # Constantes de la app
 │
-├── public/                       # Recursos estáticos
+├── assets/                           # Imágenes, fuentes y recursos
+│   ├── images/                      # Archivos de imagen (PNG, JPG, SVG)
+│   │   ├── logo.png
+│   │   ├── placeholder.png
+│   │   └── icons/
+│   ├── fonts/                       # Fuentes personalizadas (opcional)
+│   └── lottie/                      # Animaciones Lottie (opcional)
 │
-├── app.json                     # Configuración de Expo
-├── package.json                 # Dependencias y scripts
-├── tsconfig.json                # Configuración de TypeScript
-└── README.md                    # Este archivo
+├── public/                           # Recursos estáticos
+│   └── index.html                   # HTML principal para web
+│
+├── .expo/                            # Configuración de Expo (generada)
+├── .git/                             # Repositorio Git
+├── .gitignore                        # Archivos ignorados por Git
+├── .vscode/                          # Configuración de VS Code
+│   ├── settings.json
+│   └── launch.json
+├── node_modules/                     # Dependencias instaladas
+├── app.json                          # Configuración de Expo
+├── expo-env.d.ts                     # Tipos de variables de entorno
+├── tsconfig.json                     # Configuración de TypeScript
+├── eslint.config.js                  # Configuración de ESLint
+├── package.json                      # Dependencias y scripts
+├── yarn.lock                         # Lock file de dependencias
+└── README.md                         # Este archivo
 ```
+
+### Archivos clave
+
+- **app.json**: Configuración principal de Expo, nombre, versión, etc.
+- **tsconfig.json**: Configuración de compilador TypeScript
+- **package.json**: Dependencias, versión y scripts disponibles
+- **eslint.config.js**: Reglas de linting de código
 
 ---
 
@@ -323,28 +424,42 @@ interface Category {
 
 ---
 
-## 💻 Desarrollo
+## 💻 Guía de Desarrollo
 
-### Scripts disponibles
+### Configuración del entorno
+
+#### Windows / macOS / Linux
+
+1. **Instalación de dependencias base:**
 
 ```bash
-# Iniciar servidor de desarrollo
-yarn start
+# Instalar Node.js 18+ desde https://nodejs.org/
+# Verificar instalación
+node --version
+npm --version
+```
 
-# Iniciar en Android
-yarn android
+2. **Configurar Yarn:**
 
-# Iniciar en iOS
-yarn ios
+```bash
+corepack enable
+corepack prepare yarn@1.22.4 --activate
+yarn --version
+```
 
-# Iniciar en web
-yarn web
+3. **Instalar dependencias del proyecto:**
 
-# Ejecutar linter
-yarn lint
+```bash
+cd cashi-app
+yarn install
+```
 
-# Ejecutar linter con fix automático
-yarn lint --fix
+4. **Instalar dependencias de iOS (solo macOS):**
+
+```bash
+cd ios
+pod install
+cd ..
 ```
 
 ### Estructura de commits recomendada
@@ -352,49 +467,79 @@ yarn lint --fix
 Sigue la convención de commits semánticos:
 
 ```
-feat: añade nueva funcionalidad
-fix: corrige un bug
-docs: actualiza documentación
-style: cambios de formato (sin cambios lógicos)
-refactor: reorganiza código sin cambios funcionales
-test: añade o modifica pruebas
-chore: actualiza dependencias o configuración
+feat: añade nueva funcionalidad de transacciones
+fix: corrige bug en guardado de categorías
+docs: actualiza documentación del README
+style: reformatea código en componentes
+refactor: reorganiza estructura de hooks
+test: añade pruebas unitarias
+chore: actualiza dependencias a versiones 5.9
+ci: configura GitHub Actions
 ```
 
-### Variables de entorno (opcional)
+### Mejores prácticas
+
+**TypeScript:**
+- Siempre define tipos explícitos
+- Usa interfaces para estructuras de datos
+- Evita `any`, usa `unknown` si es necesario
+
+**Componentes:**
+- Mantén componentes pequeños y enfocados
+- Usa memo para componentes costosos
+- Proporciona PropTypes o interfaces TypeScript
+
+**Rendimiento:**
+- Evita renders innecesarios con useMemo y useCallback
+- Usa lazy loading para pantallas
+- Optimiza imágenes
+
+### Variables de entorno
 
 Crea un archivo `.env` en la raíz del proyecto si necesitas variables:
 
 ```env
 EXPO_PUBLIC_API_URL=https://api.ejemplo.com
 EXPO_PUBLIC_APP_NAME=Cashi
+EXPO_PUBLIC_VERSION=1.0.0
+```
+
+**Nota:** Las variables deben tener prefijo `EXPO_PUBLIC_` para estar disponibles en la app.
+
+---
+
+## 🧪 Testing
+
+### Ejecutar pruebas (opcional)
+
+Actualmente el proyecto no tiene pruebas unitarias. Para añadir Jest:
+
+```bash
+yarn add --dev jest @testing-library/react-native @types/jest
+```
+
+### Crear una prueba
+
+```typescript
+// hooks/__tests__/useLogin.test.ts
+import { renderHook, act } from '@testing-library/react-native'
+import { useLogin } from '../useLogin'
+
+describe('useLogin', () => {
+  it('debe validar credenciales correctas', () => {
+    const { result } = renderHook(() => useLogin())
+    
+    act(() => {
+      const success = result.current.login('usuario@correo.com', '1234')
+      expect(success).toBe(true)
+    })
+  })
+})
 ```
 
 ---
 
-## 📝 Desarrollo de Características
-
-### Crear un nuevo hook
-
-1. Crea el archivo en `hooks/useNombreDelHook.ts`
-2. Define los tipos si es necesario
-3. Exporta el hook desde el archivo
-
-### Crear un nuevo componente
-
-1. Crea el archivo en `components/NombreDelComponente.tsx`
-2. Define los props con TypeScript
-3. Exporta desde `components/index.ts` (si aplica)
-
-### Crear una nueva pantalla
-
-1. Crea el archivo en `app/nombre-pantalla.tsx`
-2. Usa el layout existente con `<Stack />`
-3. Importa los componentes y hooks necesarios
-
----
-
-## 🐛 Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Problema: "Cannot find module" error
 
@@ -403,6 +548,7 @@ EXPO_PUBLIC_APP_NAME=Cashi
 # Limpia cache y reinstala dependencias
 yarn cache clean
 rm -rf node_modules
+rm yarn.lock
 yarn install
 ```
 
@@ -410,7 +556,11 @@ yarn install
 
 **Solución:**
 ```bash
-# Mata el proceso en el puerto
+# Windows
+netstat -ano | findstr :8081
+taskkill /PID <PID> /F
+
+# macOS / Linux
 lsof -i :8081
 kill -9 <PID>
 
@@ -421,9 +571,86 @@ yarn start --port 8082
 ### Problema: AsyncStorage no persiste datos
 
 **Solución:**
-- Verifica que AsyncStorage esté correctamente instalado
-- Asegúrate de que los datos se estén guardando correctamente
-- En web, verifica que localStorage esté habilitado
+- Verifica que AsyncStorage esté correctamente importado
+- En desarrollo, revisa que no esté limpiando el cache
+- En web, verifica que localStorage esté habilitado en el navegador
+
+### Problema: Cambios no aparecen en la app
+
+**Solución:**
+```bash
+# Limpia el cache de Expo
+expo cache clear
+
+# Recarga la app manualmente
+# En el terminal presiona: r
+```
+
+### Problema: Build fallido en iOS
+
+**Solución:**
+```bash
+# Limpia build de iOS
+cd ios
+rm -rf Pods
+rm Podfile.lock
+pod install
+cd ..
+```
+
+---
+
+## 🚀 Roadmap
+
+### v1.0.0 (Actual) ✅
+- [x] Autenticación básica
+- [x] Crear/editar/eliminar transacciones
+- [x] Gestión de categorías
+- [x] Captura de fotos
+- [x] Geolocalización
+- [x] Almacenamiento local
+- [x] Interfaz responsiva
+- [x] Soporte Web
+
+### v1.1.0 (Próximo) 🔄
+- [ ] Exportar transacciones a CSV
+- [ ] Gráficos y estadísticas
+- [ ] Búsqueda avanzada
+- [ ] Filtros por fecha
+- [ ] Modo oscuro mejorado
+- [ ] Notificaciones
+
+### v2.0.0 (Futuro) 📋
+- [ ] Backend integrado
+- [ ] Sincronización en la nube
+- [ ] Múltiples usuarios
+- [ ] Presupuestos y alertas
+- [ ] Integración con bancos
+- [ ] Reportes avanzados
+
+---
+
+## 📝 Cambios Recientes
+
+### v1.0.0 - Mayo 2026
+
+**Agregado:**
+- ✨ Nuevo diseño mejorado del README
+- 🎨 Mejor estructura de documentación
+- 📚 Secciones ampliadas con ejemplos de código
+- 🔧 Guía completa de desarrollo
+- 🛠️ Troubleshooting detallado
+- 🚀 Roadmap del proyecto
+
+**Mejorado:**
+- 📖 Documentación más clara y accesible
+- 🎯 Ejemplos de código más realistas
+- 📋 Tabla de contenidos expandida
+- 🏗️ Arquitectura documentada
+
+**Corregido:**
+- ✅ Enlaces internos en la documentación
+- ✅ Compatibilidad multiplataforma
 
 ---
 
