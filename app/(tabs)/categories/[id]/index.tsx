@@ -41,7 +41,7 @@ export default function CategoryDetailScreen() {
 
     const category =
         categories.find(
-            (c) => c.id === id
+            (c) => c.id === Number(id)
         )
 
     if (!category) {
@@ -57,7 +57,7 @@ export default function CategoryDetailScreen() {
                     }
                 >
                     <Text style={styles.link}>
-                        Volver
+                        Volver  
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -71,7 +71,7 @@ export default function CategoryDetailScreen() {
                     "¿Eliminar categoría?"
                 )
             ) {
-                eliminarCategoria(id!)
+                eliminarCategoria(Number(id))
                     .then(() => router.back())
             }
         } else {
@@ -91,7 +91,7 @@ export default function CategoryDetailScreen() {
 
                         onPress: async () => {
                             await eliminarCategoria(
-                                id!
+                                Number(id)
                             )
 
                             router.back()

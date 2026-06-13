@@ -67,10 +67,20 @@ export default function EditTransactionScreen() {
     recargar,
   } = useTransactions()
 
+    console.log(
+  "Transacciones completas:",
+  JSON.stringify(transactions, null, 2)
+)
+
   const {
     categories,
     recargar: recargarCategorias,
   } = useCategories()
+
+  console.log(
+  "Categorías completas:",
+  JSON.stringify(categories, null, 2)
+)
 
   useFocusEffect(
     useCallback(() => {
@@ -87,7 +97,7 @@ export default function EditTransactionScreen() {
 
   const transaction =
     transactions.find(
-      (t) => t.id === id
+      (t) => t.id === Number(id)
     )
 
     console.log(
@@ -101,24 +111,19 @@ console.log(
 )
 
 
-  const defaultValues =
-    useMemo(() => {
-      return transaction
-        ? {
-            amount:
-              transaction.amount,
+const defaultValues = useMemo(() => {
+  return transaction
+    ? {
+        amount: transaction.amount,
+        type: transaction.type,
+        description: transaction.description,
+        categoryId: String(transaction.categoryId),
 
-            type:
-              transaction.type,
-
-            description:
-              transaction.description,
-
-            categoryId:
-              transaction.categoryId,
-          }
-        : undefined
-    }, [transaction])
+        photoUri: transaction.photoUri,
+        location: transaction.location,
+      }
+    : undefined
+}, [transaction])
 
   const form =
     useTransactionForm({
@@ -130,7 +135,7 @@ console.log(
         data
       ) => {
         await editarTransaccion(
-          id!,
+          Number(id),
           {
             amount:
               data.amount,
@@ -142,7 +147,7 @@ console.log(
               data.description,
 
             categoryId:
-              data.categoryId,
+              Number(data.categoryId),
 
             photoUri:
               imagePicker.imageUri ||
@@ -180,20 +185,6 @@ console.log(
     </View>
   )
 }
-
-
-/*if (!transaction) {
-    return (
-      <View style={styles.screen}>
-        <View style={styles.centered}>
-          <Text style={styles.error}>
-            Transacción no encontrada
-          </Text>
-        </View>
-      </View>
-    )
-  }
-*/
 
 if (!transaction) {
   console.log("ID recibido:", id)

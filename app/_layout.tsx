@@ -1,10 +1,11 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+import { AuthProvider } from "../contexts/AuthContext";
 
 export default function RootLayout() {
   return (
-    <>
+    <AuthProvider>
       <Stack>
         <Stack.Screen
           name="index"
@@ -22,6 +23,6 @@ export default function RootLayout() {
       </Stack>
 
       <StatusBar style="auto" />
-    </>
+    </AuthProvider>
   );
 }

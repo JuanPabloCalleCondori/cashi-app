@@ -1,5 +1,5 @@
 export interface Transaction {
-  id: string
+  id: number
 
   amount: number
 
@@ -9,7 +9,7 @@ export interface Transaction {
 
   date: string
 
-  categoryId: string
+  categoryId: number
 
   // NUEVO EVALUACIÓN 3
 
@@ -28,7 +28,7 @@ export interface CreateTransactionInput {
 
   description: string
 
-  categoryId: string
+  categoryId: number
 
   // NUEVO EVALUACIÓN 3
 
@@ -47,7 +47,7 @@ export interface UpdateTransactionInput {
 
   description?: string
 
-  categoryId?: string
+  categoryId?: number
 
   // NUEVO EVALUACIÓN 3
 

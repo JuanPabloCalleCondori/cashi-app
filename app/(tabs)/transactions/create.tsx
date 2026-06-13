@@ -6,8 +6,6 @@ import {
 
 import {
   useCallback,
-  useRef,
-  useState,
 } from "react"
 
 import {
@@ -61,24 +59,15 @@ export default function CreateTransactionScreen() {
   const locationHook =
     useLocation()
 
-  const [resetTrigger, setResetTrigger] =
-    useState(0)
-
   useFocusEffect(
     useCallback(() => {
       void recargar()
-      setResetTrigger((prev) => prev + 1)
     }, [recargar])
   )
-
-  const formResetRef = useRef<
-    (() => void) | null
-  >(null)
 
   const form =
     useTransactionForm({
       mode: "create",
-      resetTrigger,
 
       onSubmit: async (data) => {
         await crearTransaccion({
@@ -86,14 +75,9 @@ export default function CreateTransactionScreen() {
           type: data.type!,
           description:
             data.description!,
-          categoryId:
-            data.categoryId!,
-
-          photoUri:
-            imagePicker.imageUri,
-
-          location:
-            locationHook.location
+          categoryId: Number(data.categoryId!),
+          photoUri:imagePicker.imageUri,
+          location:locationHook.location
               ? {
                   latitude:
                     locationHook.location.latitude,
@@ -104,13 +88,11 @@ export default function CreateTransactionScreen() {
               : undefined,
         })
 
-        formResetRef.current?.()
+        form.reset()
         
         router.back()
       },
     })
-
-  formResetRef.current = form.reset
 
   return (
     <View style={styles.screen}>
@@ -214,38 +196,26 @@ export default function CreateTransactionScreen() {
           </View>
 
           <View style={styles.picker}>
-            <Picker
-              selectedValue={
-                form.categoryId
-              }
-              onValueChange={(
-                value
-              ) =>
-                form.setCategoryId(
-                  value
-                )
-              }
-            >
-              <Picker.Item
-                label="Seleccione categoría"
-                value=""
-              />
+  <Picker
+    selectedValue={form.categoryId}
+    onValueChange={(value: string) =>
+      form.setCategoryId(value)
+    }
+  >
+    <Picker.Item
+      label="Seleccione categoría"
+      value=""
+    />
 
-              {categories.map(
-                (category) => (
-                  <Picker.Item
-                    key={category.id}
-                    label={
-                      category.name
-                    }
-                    value={
-                      category.id
-                    }
-                  />
-                )
-              )}
-            </Picker>
-          </View>
+    {categories.map((category) => (
+      <Picker.Item
+        key={category.id}
+        label={category.name}
+        value={String(category.id)}
+      />
+    ))}
+  </Picker>
+</View>
 
           {form.errores
             .categoryId ? (

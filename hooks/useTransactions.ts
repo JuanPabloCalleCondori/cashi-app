@@ -1,5 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
-
 import {
   useCallback,
   useEffect,
@@ -13,170 +11,210 @@ import type {
   UpdateTransactionInput,
 } from "../types/transaction"
 
-import { eventEmitter } from "../utils/eventEmitter"
+import { useAuth } from "../contexts/AuthContext"
+import { transactionService } from "../services/transactionService"
 
-const STORAGE_KEY =
-  "transactions"
+export const useTransactions = () => {
+  const { token } = useAuth()
 
-export const useTransactions =
-  () => {
-    const [
-      transactions,
-      setTransactions,
-    ] = useState<Transaction[]>([])
+  const [transactions, setTransactions] =
+    useState<Transaction[]>([])
 
-    const [loading, setLoading] =
-      useState(true)
+  const [loading, setLoading] =
+    useState(true)
 
-    const [error, setError] =
-      useState<string | null>(null)
+  const [error, setError] =
+    useState<string | null>(null)
 
-    const cargarTransacciones =
-      useCallback(async () => {
-        try {
-          setLoading(true)
+  const cargarTransacciones =
+    useCallback(async () => {
+      if (!token) return
 
-          const raw =
-            await AsyncStorage.getItem(
-              STORAGE_KEY
-            )
+      try {
+        setLoading(true)
 
-          const data: Transaction[] =
-            raw
-              ? JSON.parse(raw)
-              : []
-
-          setTransactions(data)
-        } catch {
-          setError(
-            "No se pudieron cargar las transacciones"
+        const data =
+          await transactionService.getAll(
+            token
           )
-        } finally {
-          setLoading(false)
-        }
-      }, [])
 
-    useEffect(() => {
-      cargarTransacciones()
-      
-      // Suscribirse a cambios de transacciones desde otros componentes
-      const unsubscribe =
-        eventEmitter.on(
-          "transactions-changed",
-          cargarTransacciones
+        setTransactions(
+          data.map((t: any) => ({
+            ...t,
+
+            photoUri: t.receiptUrl
+              ? t.receiptUrl.startsWith("http")
+                ? t.receiptUrl
+                : `https://cashi-api-bnii.onrender.com${t.receiptUrl}`
+              : undefined,
+
+            location:
+              t.latitude != null &&
+              t.longitude != null
+                ? {
+                    latitude: t.latitude,
+                    longitude: t.longitude,
+                  }
+                : undefined,
+          }))
         )
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Error al cargar transacciones"
+        )
+      } finally {
+        setLoading(false)
+      }
+    }, [token])
 
-      return unsubscribe
-    }, [cargarTransacciones])
+  useEffect(() => {
+    void cargarTransacciones()
+  }, [cargarTransacciones])
 
-    const persistir = async (
-      nuevas: Transaction[]
+  const crearTransaccion =
+    async (
+      input: CreateTransactionInput
     ) => {
-      await AsyncStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(nuevas)
+      if (!token) return
+
+      const payload = {
+        amount: input.amount,
+
+        type: input.type,
+
+        description:
+          input.description,
+
+        date:
+          new Date().toISOString(),
+
+        categoryId:
+          Number(input.categoryId),
+
+        receiptUrl:
+          input.photoUri,
+
+        latitude:
+          input.location?.latitude,
+
+        longitude:
+          input.location?.longitude,
+      }
+
+      await transactionService.create(
+        payload,
+        token
       )
 
-      setTransactions(nuevas)
-      
-      // Notificar a todos los componentes que usan useTransactions
-      eventEmitter.emit("transactions-changed")
+      await cargarTransacciones()
     }
 
-    const crearTransaccion =
-      async (
-        input: CreateTransactionInput
-      ) => {
-        const nueva: Transaction = {
-          id: Date.now().toString(),
+  const editarTransaccion =
+    async (
+      id: number,
+      input: UpdateTransactionInput
+    ) => {
+      if (!token) return
 
-          ...input,
+      const payload = {
+        amount: input.amount,
 
-          date:
-            new Date().toISOString(),
-        }
+        type: input.type,
 
-        await persistir([
-          ...transactions,
-          nueva,
-        ])
+        description:
+          input.description,
+
+        categoryId:
+          input.categoryId
+            ? Number(
+                input.categoryId
+              )
+            : undefined,
+
+        receiptUrl:
+          input.photoUri,
+
+        latitude:
+          input.location?.latitude,
+
+        longitude:
+          input.location?.longitude,
       }
 
-    const editarTransaccion =
-      async (
-        id: string,
-        input: UpdateTransactionInput
-      ) => {
-        const actualizadas =
-          transactions.map((t) =>
-            t.id === id
-              ? { ...t, ...input }
-              : t
-          )
+      await transactionService.update(
+        id,
+        payload,
+        token
+      )
 
-        await persistir(actualizadas)
-      }
+      await cargarTransacciones()
+    }
 
-    const eliminarTransaccion =
-      async (id: string) => {
-        await persistir(
-          transactions.filter(
-            (t) => t.id !== id
-          )
+  const eliminarTransaccion =
+    async (id: number) => {
+      if (!token) return
+
+      await transactionService.delete(
+        id,
+        token
+      )
+
+      await cargarTransacciones()
+    }
+
+  const totalIncome =
+    useMemo(() => {
+      return transactions
+        .filter(
+          (t) =>
+            t.type === "income"
         )
-      }
+        .reduce(
+          (acc, curr) =>
+            acc + curr.amount,
+          0
+        )
+    }, [transactions])
 
-    const totalIncome =
-      useMemo(() => {
-        return transactions
-          .filter(
-            (t) =>
-              t.type === "income"
-          )
-          .reduce(
-            (acc, curr) =>
-              acc + curr.amount,
-            0
-          )
-      }, [transactions])
+  const totalExpense =
+    useMemo(() => {
+      return transactions
+        .filter(
+          (t) =>
+            t.type === "expense"
+        )
+        .reduce(
+          (acc, curr) =>
+            acc + curr.amount,
+          0
+        )
+    }, [transactions])
 
-    const totalExpense =
-      useMemo(() => {
-        return transactions
-          .filter(
-            (t) =>
-              t.type === "expense"
-          )
-          .reduce(
-            (acc, curr) =>
-              acc + curr.amount,
-            0
-          )
-      }, [transactions])
+  const balance =
+    totalIncome - totalExpense
 
-    const balance =
-      totalIncome - totalExpense
+  return {
+    transactions,
 
-    return {
-      transactions,
+    loading,
 
-      loading,
+    error,
 
-      error,
+    crearTransaccion,
 
-      crearTransaccion,
+    editarTransaccion,
 
-      editarTransaccion,
+    eliminarTransaccion,
 
-      eliminarTransaccion,
+    recargar:
+      cargarTransacciones,
 
-      recargar:
-        cargarTransacciones,
+    totalIncome,
 
-      totalIncome,
+    totalExpense,
 
-      totalExpense,
-
-      balance,
-    }
+    balance,
   }
+}

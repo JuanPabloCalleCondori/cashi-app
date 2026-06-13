@@ -63,7 +63,7 @@ export default function TransactionDetailScreen() {
 
   const transaction =
     transactions.find(
-      (t) => t.id === id
+      (t) => t.id === Number(id)
     )
   console.log(
   "Transaction encontrada:",
@@ -98,7 +98,7 @@ export default function TransactionDetailScreen() {
         )
 
       if (confirmed) {
-        eliminarTransaccion(id!)
+        eliminarTransaccion(Number(id))
           .then(() =>
             router.back()
           )
@@ -120,7 +120,7 @@ export default function TransactionDetailScreen() {
 
             onPress: async () => {
               await eliminarTransaccion(
-                id!
+                Number(id)
               )
 
               router.back()
@@ -130,6 +130,11 @@ export default function TransactionDetailScreen() {
       )
     }
   }
+
+  console.log(
+  "TRANSACTION DETAIL:",
+  JSON.stringify(transaction, null, 2)
+)
 
   return (
     <View style={styles.screen}>
@@ -238,7 +243,7 @@ export default function TransactionDetailScreen() {
                   "/(tabs)/transactions/[id]/edit",
 
                 params: {
-                  id,
+                  id: Number(id),
                 },
               })
             }}

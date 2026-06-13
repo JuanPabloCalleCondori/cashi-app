@@ -55,7 +55,7 @@ export default function TransactionsScreen() {
     const category =
       categories.find(
         (c) =>
-          c.id === categoryId
+          c.id === categoryId 
       )
 
     return (
@@ -146,7 +146,7 @@ export default function TransactionsScreen() {
                 style={styles.category}
               >
                 {getCategoryName(
-                  item.categoryId
+                  item.categoryId 
                 )}
               </Text>
             </View>

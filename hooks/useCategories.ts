@@ -1,21 +1,21 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import {
   useCallback,
   useEffect,
   useState,
 } from "react"
 
-import type {
+import {
   Category,
   CreateCategoryInput,
   UpdateCategoryInput,
 } from "../types/category"
 
-import { eventEmitter } from "../utils/eventEmitter"
-
-const STORAGE_KEY = "categories"
+import { useAuth } from "../contexts/AuthContext"
+import { categoryService } from "../services/categoryService"
 
 export const useCategories = () => {
+  const { token } = useAuth()
+
   const [categories, setCategories] =
     useState<Category[]>([])
 
@@ -27,88 +27,84 @@ export const useCategories = () => {
 
   const cargarCategorias =
     useCallback(async () => {
+      if (!token) return
+
       try {
         setLoading(true)
+        setError(null)
 
-        const raw =
-          await AsyncStorage.getItem(
-            STORAGE_KEY
+        const data =
+          await categoryService.getAll(
+            token
           )
 
-        const data: Category[] = raw
-          ? JSON.parse(raw)
-          : []
-
         setCategories(data)
-      } catch {
+      } catch (error) {
         setError(
-          "No se pudieron cargar las categorías"
+          error instanceof Error
+            ? error.message
+            : "No se pudieron cargar las categorías"
         )
       } finally {
         setLoading(false)
       }
-    }, [])
+    }, [token])
 
   useEffect(() => {
-    cargarCategorias()
-    
-    // Suscribirse a cambios de categorías desde otros componentes
-    const unsubscribe =
-      eventEmitter.on(
-        "categories-changed",
-        cargarCategorias
-      )
-
-    return unsubscribe
+    void cargarCategorias()
   }, [cargarCategorias])
-
-  const persistir = async (
-    nuevasCategorias: Category[]
-  ) => {
-    await AsyncStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(nuevasCategorias)
-    )
-
-    setCategories(nuevasCategorias)
-    
-    // Notificar a todos los componentes que usan useCategories
-    eventEmitter.emit("categories-changed")
-  }
 
   const crearCategoria = async (
     input: CreateCategoryInput
   ) => {
-    const nueva: Category = {
-      id: Date.now().toString(),
-      ...input,
-    }
+    if (!token) return
 
-    await persistir([
-      ...categories,
+    const nueva =
+      await categoryService.create(
+        input.name,
+        token
+      )
+
+    setCategories((prev) => [
+      ...prev,
       nueva,
     ])
   }
 
   const editarCategoria = async (
-    id: string,
+    id: number,
     input: UpdateCategoryInput
   ) => {
-    const actualizadas =
-      categories.map((c) =>
-        c.id === id
-          ? { ...c, ...input }
-          : c
+    if (!token) return
+
+    const actualizada =
+      await categoryService.update(
+        id,
+        input.name ?? "",
+        token
       )
 
-    await persistir(actualizadas)
+    setCategories((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? actualizada
+          : c
+      )
+    )
   }
 
   const eliminarCategoria = async (
-    id: string
+    id: number
   ) => {
-    await persistir(
-      categories.filter(
+    if (!token) return
+
+    await categoryService.delete(
+      id,
+      token
+    )
+
+    setCategories((prev) =>
+      prev.filter(
         (c) => c.id !== id
       )
     )

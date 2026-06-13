@@ -18,9 +18,9 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleLogin = () => {
-    const success = login(email, password)
-
+  const handleLogin = async () => {
+    const success = await login(email, password);
+  
     if (success) {
       router.replace("/(tabs)")
     }

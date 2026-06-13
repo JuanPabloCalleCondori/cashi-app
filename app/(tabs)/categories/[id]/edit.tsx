@@ -1,28 +1,28 @@
 import {
-    router,
-    useLocalSearchParams,
+  router,
+  useLocalSearchParams,
 } from "expo-router"
 
 import {
-    useMemo,
+  useMemo,
 } from "react"
 
 import {
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native"
 
 import {
-    useCategories,
+  useCategories,
 } from "../../../../hooks/useCategories"
 
 import {
-    useCategoryForm,
+  useCategoryForm,
 } from "../../../../hooks/useCategoryForm"
 
 export default function EditCategoryScreen() {
@@ -38,7 +38,7 @@ export default function EditCategoryScreen() {
 
   const category =
     categories.find(
-      (c) => c.id === id
+      (c) => c.id === Number(id)
     )
 
   const defaultValues =
@@ -57,7 +57,7 @@ export default function EditCategoryScreen() {
 
     onSubmit: async (data) => {
       await editarCategoria(
-        id!,
+        Number(id),
         data
       )
 
