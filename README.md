@@ -2,6 +2,8 @@
 
 **Cashi** es una aplicación móvil moderna para la gestión de transacciones y categorías personalizadas. Construida con **React Native**, **Expo** y **TypeScript**, ofrece una experiencia fluida y responsiva en iOS, Android y Web.
 
+Link video de YT testeando la aplicacion con el backend: https://youtube.com/shorts/Kbj-lwiP6Cg?si=jJUHyK9-1Qc9QIrp
+
 <div align="center">
 
 ![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?style=flat-square&logo=react)
